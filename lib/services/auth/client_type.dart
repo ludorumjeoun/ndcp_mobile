@@ -1,5 +1,7 @@
-part of auth;
+import 'package:json_annotation/json_annotation.dart';
 
+
+@JsonEnum()
 enum AuthClientType {
   unknown('unknown', '미선택', false),
   doctor('doctor', '의사', true),

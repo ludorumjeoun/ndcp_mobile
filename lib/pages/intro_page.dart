@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ndcp_mobile/services/auth.dart';
-import 'package:ndcp_mobile/services/fcm.dart';
+import 'package:ndcp_mobile/services/auth/auth.dart';
 
 class IntroPage extends ConsumerWidget {
   const IntroPage({super.key});
@@ -19,9 +17,13 @@ class IntroPage extends ConsumerWidget {
         onFocusChange: (value) {
           print('focus $value');
           if (value) {
-            Timer(const Duration(seconds: 3), () {
+            ref.read(authProvider.notifier).restore();
+            if (ref.read(authProvider).clientType == AuthClientType.unknown) {
               Navigator.pushNamed(context, '/login');
-            });
+            } else {
+              Navigator.pushNamed(context, '/home');
+            }
+
           }
         },
         child: const Center(

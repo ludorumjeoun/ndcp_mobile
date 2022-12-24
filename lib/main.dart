@@ -1,11 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndcp_mobile/pages/intro_page.dart';
 import 'package:ndcp_mobile/pages/login_page.dart';
 import 'package:ndcp_mobile/services/fcm.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 void main() {
   final container = ProviderContainer();
