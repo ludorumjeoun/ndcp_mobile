@@ -1,4 +1,3 @@
-import 'package:ndcp_mobile/services/auth/auth.dart';
 import 'package:ndcp_mobile/services/auth/authorization.dart';
 import 'package:ndcp_mobile/services/auth/workspace.dart';
 
@@ -14,8 +13,8 @@ abstract class APIGuard {}
 
 abstract class APIGuardPublic extends APIGuard {}
 
-abstract class APIGuardAuthorize extends APIGuard {
-  Authorization get authorization;
+abstract class APIGuardAuthorize<AUTH> extends APIGuard {
+  AUTH get authorization;
 }
 
 abstract class APITarget {}
@@ -31,7 +30,7 @@ abstract class PublicGatewayAPI implements APIGuardPublic, APITargetGateway {
 }
 
 abstract class AuthorizedGatewayAPI
-    implements APIGuardAuthorize, APITargetGateway {}
+    implements APIGuardAuthorize<Authorization>, APITargetGateway {}
 
 abstract class PublicWorkspaceAPI
     implements APIGuardPublic, APITargetWorkspace {
@@ -39,4 +38,4 @@ abstract class PublicWorkspaceAPI
 }
 
 abstract class AuthorizedWorkspaceAPI
-    implements APIGuardAuthorize, APITargetWorkspace {}
+    implements APIGuardAuthorize<Authorization>, APITargetWorkspace {}

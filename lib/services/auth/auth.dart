@@ -1,10 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:ndcp_mobile/services/auth/authorization.dart';
-import 'package:ndcp_mobile/services/auth/workspace.dart';
 import 'package:ndcp_mobile/services/env.dart';
 import 'package:ndcp_mobile/services/response.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../backend/requests/login.dart';
 

@@ -1,4 +1,3 @@
-import 'package:ndcp_mobile/services/auth/auth.dart';
 import 'package:ndcp_mobile/services/auth/authorization.dart';
 import 'package:ndcp_mobile/services/auth/client_type.dart';
 import 'package:ndcp_mobile/services/auth/workspace.dart';
@@ -35,9 +34,10 @@ class DummyPublicWorkspaceAPI extends DummyAPI implements PublicWorkspaceAPI {
 class DummyAuthorizedWorkspaceAPI extends DummyAPI
     implements AuthorizedWorkspaceAPI {
   @override
-  final Workspace workspace;
-  @override
   final Authorization authorization;
 
-  DummyAuthorizedWorkspaceAPI(this.workspace, this.authorization);
+  DummyAuthorizedWorkspaceAPI(this.authorization);
+
+  @override
+  Workspace get workspace => authorization.workspace;
 }

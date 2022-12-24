@@ -1,8 +1,8 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndcp_mobile/services/auth/auth.dart';
+import 'package:ndcp_mobile/services/auth/client_type.dart';
 
 class IntroPage extends ConsumerWidget {
   const IntroPage({super.key});

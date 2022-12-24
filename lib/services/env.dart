@@ -1,4 +1,5 @@
-import 'package:ndcp_mobile/services/auth/auth.dart';
+import 'package:ndcp_mobile/services/auth/authorization.dart';
+import 'package:ndcp_mobile/services/auth/workspace.dart';
 import 'package:ndcp_mobile/services/backend/backend.dart';
 import 'package:ndcp_mobile/services/backend/dummy_backend.dart';
 
@@ -8,9 +9,8 @@ class Env {
 
 abstract class IEnvironment {
   PublicGatewayAPI get apiGateway;
-  PublicWorkspaceAPI getPublicWorkspaceAPI(String workspaceId);
-  AuthorizedWorkspaceAPI getAuthorizedWorkspaceAPI(
-      String workspaceId, String authorization);
+  PublicWorkspaceAPI getPublicWorkspaceAPI(Workspace workspace);
+  AuthorizedWorkspaceAPI getAuthorizedWorkspaceAPI(Authorization authorization);
 }
 
 class DummyEnv extends IEnvironment {
@@ -18,14 +18,14 @@ class DummyEnv extends IEnvironment {
   PublicGatewayAPI get apiGateway => DummyPublicGatewayAPI();
 
   @override
-  PublicWorkspaceAPI getPublicWorkspaceAPI(String workspaceId) {
-    return DummyPublicWorkspaceAPI(workspaceId);
+  PublicWorkspaceAPI getPublicWorkspaceAPI(Workspace workspace) {
+    return DummyPublicWorkspaceAPI(workspace);
   }
 
   @override
   AuthorizedWorkspaceAPI getAuthorizedWorkspaceAPI(
-      String workspaceId, String authorization) {
-    return DummyAuthorizedWorkspaceAPI(workspaceId, authorization);
+      Authorization authorization) {
+    return DummyAuthorizedWorkspaceAPI(authorization);
   }
 
 }
