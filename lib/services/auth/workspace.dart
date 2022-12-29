@@ -8,9 +8,14 @@ class Workspace {
   final String id;
 
   Workspace(this.name, this.id);
-  static final unknown = Workspace('', '');
 
+  static final unknown = Workspace('', '');
   factory Workspace.fromJson(Map<String, dynamic> json) =>
       _$WorkspaceFromJson(json);
   Map<String, dynamic> toJson() => _$WorkspaceToJson(this);
+
+  @override
+  String toString() {
+    return 'Workspace{name: $name, id: $id}';
+  }
 }

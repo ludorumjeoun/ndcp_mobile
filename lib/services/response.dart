@@ -13,7 +13,15 @@ class GenericFailure extends Failure {
   String toString() => '$runtimeType: $reason';
 }
 
-class APIFailure extends Failure {}
+class APIFailure extends Failure {
+  final int code;
+  final String reason;
+
+  APIFailure(this.code, this.reason);
+
+  @override
+  String toString() => '$runtimeType: $code - $reason';
+}
 
 abstract class Result<S> {
   static Result<S> failure<S>(Failure failure) => FailureResult(failure);

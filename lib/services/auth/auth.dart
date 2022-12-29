@@ -1,96 +1,97 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndcp_mobile/services/auth/authorization.dart';
-import 'package:ndcp_mobile/services/env.dart';
+import 'package:ndcp_mobile/services/auth/workspace.dart';
+import 'package:ndcp_mobile/services/backend/backend.dart';
+import 'package:ndcp_mobile/services/backend/requests/login_request.dart';
+import 'package:ndcp_mobile/services/frontend/router.dart';
 import 'package:ndcp_mobile/services/response.dart';
-
-import '../backend/requests/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final authProvider = StateNotifierProvider<IAuthNotifier, Authorization>(
-  (ref) => AuthNotifier(),
+  (ref) => AuthNotifier(ref),
 );
 
 abstract class IAuthNotifier extends StateNotifier<Authorization> {
-  final IEnvironment env = Env.current;
-  IAuthNotifier() : super(Authorization.unknown);
+  IAuthNotifier(super.state);
 
-  Future<Response> restore();
-  Future<Response<Authorization>> authorized(LoginRequest request);
+  Future<Authorization> restore();
+  Future<void> workspaceSelected(Workspace workspace);
+  Future<void> authorized(Authorization authorization);
   Future<void> logout();
 }
 
 class AuthNotifier extends IAuthNotifier {
+  static const String restoreKey = 'authorization';
+  final Ref ref;
+  AuthNotifier(this.ref) : super(Authorization.unknown);
+
   @override
-  Future<Response<Authorization>> authorized(LoginRequest request) {
-    // TODO: implement authorized
-    throw UnimplementedError();
+  Future<void> authorized(Authorization authorization) async {
+    await ref
+        .read(backendProvider.notifier)
+        .initAuthorizedWorkspace(authorization);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(restoreKey, jsonEncode(authorization.toJson()));
+    state = authorization;
   }
 
   @override
-  Future<void> logout() {
-    // TODO: implement logout
-    throw UnimplementedError();
+  Future<void> logout() async {
+    await ref.read(backendProvider.notifier).init();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(restoreKey);
+    state = Authorization.unknown;
   }
 
   @override
-  Future<Response> restore() {
-    // TODO: implement restore
-    throw UnimplementedError();
+  Future<Authorization> restore() async {
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      final stringAuth = jsonDecode(prefs.getString(restoreKey) ?? '');
+      debugPrint('Restoring authorization: $stringAuth');
+      final localAuth = Authorization.fromJson(stringAuth);
+      final localWorkspace = localAuth.workspace;
+      if (localWorkspace == null) {
+        return Authorization.unknown;
+      }
+      final workspace = await ref
+          .read(backendProvider)
+          .gatewayPublicAPI
+          ?.findWorkspace(localWorkspace.id);
+      if (workspace == null) {
+        return Authorization.unknown;
+      }
+      debugPrint('Restored workspace: $workspace');
+      await workspaceSelected(workspace);
+      final nextAuth = await ref
+          .read(backendProvider)
+          .workspacePublicAPI
+          ?.generateToken(localAuth.refreshToken);
+      debugPrint('Restored authorization: $nextAuth');
+      if (nextAuth == null) {
+        return Authorization.unknown;
+      }
+      final auth = Authorization(
+          workspace: workspace,
+          user: nextAuth.user,
+          accessToken: nextAuth.accessToken,
+          refreshToken: localAuth.refreshToken);
+      return auth;
+    } on FormatException {
+      debugPrint('$runtimeType:restore format exception');
+      return Authorization.unknown;
+    } catch (e) {
+      debugPrint('$runtimeType:restore $e');
+      return Authorization.unknown;
+    }
+  }
+
+  @override
+  Future<void> workspaceSelected(Workspace workspace) async {
+    await ref.read(backendProvider.notifier).initWorkspace(workspace);
+    state = Authorization(workspace: workspace);
   }
 }
-
-// class AuthNotifier extends IAuthNotifier {
-//   AuthNotifier();
-
-//   @override
-//   restore() async {
-//     final prefs = await SharedPreferences.getInstance();
-//     print('restore');
-//     print(prefs.getString('auth') ?? 'nothing');
-//     try {
-//       env.apiGateway.findWorkspace()
-//       final res = await repo.restore(prefs.getString('auth') ?? '');
-//       if (res.isSuccess) {
-//         state = res.dataOrElse(Authorization.unknown);
-//       }
-//       print(state);
-//       return res;
-//     } on FormatException {
-//       print('format exception');
-//       return Response.success(Authorization.unknown);
-//     } catch (e) {
-//       return Response.fail(e);
-//     }
-//   }
-
-//   @override
-//   clientType(AuthClientType clientType) async {
-//     state = Authorization(state.workspace, clientType, '');
-//   }
-
-//   @override
-//   workspace(String workspaceId) async {
-//     final response = await repo.workspace(workspaceId);
-//     final workspace = response.dataOrElse(Workspace.unknown);
-//     state = Authorization(workspace.id, AuthClientType.unknown, '');
-//     return response;
-//   }
-
-//   @override
-//   login(LoginRequest request) async {
-//     final response = await repo.login(request);
-//     state = response.dataOrElse(Authorization.unknown);
-//     final json = jsonEncode(state.toJson());
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.setString('auth', json);
-//     print('auth: $json');
-//     return response;
-//   }
-
-//   @override
-//   Future<void> logout() async {
-//     state = Authorization.unknown;
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.clear();
-//     return;
-//   }
-// }
