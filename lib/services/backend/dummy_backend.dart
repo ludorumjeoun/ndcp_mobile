@@ -40,7 +40,12 @@ abstract class DummyAPI implements RemoteAPI {
 class DummyPublicGatewayAPI extends DummyAPI implements PublicGatewayAPI {
   @override
   Future<Workspace> findWorkspace(String workspaceId) async {
-    final res = await request(workspaceId, Workspace('비투엔 늘 병원', workspaceId));
+    Workspace? res;
+    if (workspaceId.isEmpty) {
+      res = await request(workspaceId, null);
+    } else {
+      res = await request(workspaceId, Workspace('비투엔 늘 병원', workspaceId));
+    }
     if (res == null) {
       throw APIFailure(404, 'Workspace not found');
     }

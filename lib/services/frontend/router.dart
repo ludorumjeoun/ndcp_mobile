@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ndcp_mobile/pages/doctor_main_page.dart';
+import 'package:ndcp_mobile/pages/doctors/doctor_main_page.dart';
+import 'package:ndcp_mobile/pages/find_workspace_modal.dart';
 import 'package:ndcp_mobile/pages/intro_page.dart';
 import 'package:ndcp_mobile/pages/login_page.dart';
-import 'package:ndcp_mobile/pages/main_page.dart';
 import 'package:ndcp_mobile/services/auth/auth.dart';
-import 'package:ndcp_mobile/services/auth/authorization.dart';
 import 'package:ndcp_mobile/services/auth/client_type.dart';
 
 final routerProvider = Provider<AppRouter>((ref) {
   return AppRouter(ref);
 });
 
-extension RouterExtension on WidgetRef {
-  AppRouterState router() => read(routerProvider).of(context);
+extension WidgetRefRouterExtension on WidgetRef {
+  AppRouterState router(Widget widget, {BuildContext? context}) =>
+      read(routerProvider).of(context ?? this.context, widget);
 }
 
 enum AppRoutePath {
   intro,
   login,
+  workspaceSearch,
   main(allowedTypes: ClientType.listSignedIn);
 
   const AppRoutePath({this.allowedTypes = ClientType.values});
@@ -27,57 +28,68 @@ enum AppRoutePath {
 
 class AppRouterState {
   final NavigatorState _navigator;
+  final Widget _widget;
   final AppRouter _router;
-  AppRouterState(this._router, this._navigator);
-  push(AppRoutePath path) {
-    _navigator.push(_router._router(path));
+  AppRouterState(this._router, this._widget, this._navigator);
+
+  Future<T?> pushModal<T>(WidgetBuilder builder) {
+    return _navigator.push(MaterialPageRoute<T>(
+      builder: builder,
+    ));
   }
 
-  pushReplacement(AppRoutePath path) {
-    _navigator.pushReplacement(_router._router(path));
+  Future<T?> pushPath<T>(AppRoutePath path) {
+    debugPrint('push $path from $_widget');
+    return _navigator.pushNamed(_nameWithPath(path));
   }
 
-  pop() {
-    _navigator.pop();
+  pushReplacementPath(AppRoutePath path) {
+    debugPrint('pushReplacement $path from $_widget');
+    return _navigator.pushReplacementNamed(_nameWithPath(path));
+  }
+
+  pop([dynamic result]) {
+    _navigator.pop(result);
+  }
+
+  String _nameWithPath(AppRoutePath path) {
+    final isSignedIn = _router.ref.read(authProvider).isSignedIn;
+    if (isSignedIn == false) {
+      switch (path) {
+        case AppRoutePath.intro:
+          return '/';
+        case AppRoutePath.login:
+          return '/login';
+        case AppRoutePath.workspaceSearch:
+          return '/login/workspace';
+        default:
+          throw UnimplementedError();
+      }
+    }
+    final clientType = _router.ref.read(authProvider).user?.clientType;
+    if (clientType == ClientType.doctor) {
+      switch (path) {
+        case AppRoutePath.main:
+          return '/doctor/';
+        default:
+          throw UnimplementedError();
+      }
+    }
+    throw UnimplementedError();
   }
 }
 
 class AppRouter {
+  static final Map<String, WidgetBuilder> routes = {
+    '/': (context) => const IntroPage(),
+    '/login': (context) => const LoginPage(),
+    '/doctor/': (context) => const DoctorMainPage(),
+  };
+
   final Ref ref;
   AppRouter(this.ref);
 
-  AppRouterState of(BuildContext context) {
-    return AppRouterState(this, Navigator.of(context));
-  }
-
-  Route _router(AppRoutePath path) {
-    return MaterialPageRoute(
-      builder: (context) => _widget(path),
-    );
-  }
-
-  Widget _widget(AppRoutePath path) {
-    if (ref.read(authProvider).isSignedIn == false) {
-      switch (path) {
-        case AppRoutePath.intro:
-          return const IntroPage();
-        case AppRoutePath.login:
-          return const LoginPage();
-        default:
-          debugPrint('route $path');
-          return const IntroPage();
-      }
-    }
-    switch (path) {
-      case AppRoutePath.intro:
-        return const IntroPage();
-      case AppRoutePath.login:
-        return const LoginPage();
-      case AppRoutePath.main:
-        return const DoctorMainPage();
-      default:
-        debugPrint('route $path');
-        return const IntroPage();
-    }
+  AppRouterState of(BuildContext context, Widget widget) {
+    return AppRouterState(this, widget, Navigator.of(context));
   }
 }

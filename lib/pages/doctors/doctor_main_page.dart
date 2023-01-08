@@ -4,15 +4,17 @@ import 'package:ndcp_mobile/components/header.dart';
 import 'package:ndcp_mobile/components/theme.dart';
 import 'package:ndcp_mobile/services/auth/auth.dart';
 import 'package:ndcp_mobile/services/fcm.dart';
+import 'package:ndcp_mobile/services/frontend/router.dart';
+import 'package:ndcp_mobile/components/table.dart';
 
-class MainPage extends ConsumerStatefulWidget {
-  const MainPage({super.key});
+class DoctorMainPage extends ConsumerStatefulWidget {
+  const DoctorMainPage({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => MainPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => DoctorMainPageState();
 }
 
-class MainPageState extends ConsumerState<MainPage> {
+class DoctorMainPageState extends ConsumerState<DoctorMainPage> {
   _drawerHeader() {
     final user = ref.watch(authProvider).user;
     return DrawerHeader(
@@ -45,30 +47,15 @@ class MainPageState extends ConsumerState<MainPage> {
             title: const Text('로그아웃'),
             onTap: () {
               // signout
-              ref.read(authProvider.notifier).logout().whenComplete(() {
-                Navigator.of(context).pushReplacementNamed('/login');
+              ref.read(authProvider.notifier).logout().then((value) {
+                // navigate to login page
+                ref.router(widget).pushReplacementPath(AppRoutePath.login);
               });
             },
           ),
         ]),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(ref.watch(authProvider).user?.name ?? 'no user'),
-            Text(ref.watch(fcmTokenProvider)),
-            ElevatedButton(
-                onPressed: () => {
-                      // signout
-                      ref.read(authProvider.notifier).logout().whenComplete(() {
-                        Navigator.popAndPushNamed(context, '/login');
-                      })
-                    },
-                child: const Text('Sign out'))
-          ],
-        ),
-      ),
+      body: AppTable(),
     );
   }
 }
