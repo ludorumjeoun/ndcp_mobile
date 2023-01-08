@@ -58,6 +58,8 @@ mixin AppTheme {
     background: AppColors.background,
     primaryContainer: AppColors.headerBackground,
     brightness: Brightness.dark,
+    onPrimary: AppColors.primaryText,
+    onPrimaryContainer: const Color.fromRGBO(0x00, 0x7B, 0xFF, 1),
   );
   static final darkTableColors = [
     //background: #273149;
@@ -131,6 +133,20 @@ mixin AppTheme {
         ),
         backgroundColor: AppColors.headerBackground,
         foregroundColor: Colors.white),
+    switchTheme: SwitchThemeData(
+      thumbColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return colorScheme.onPrimary;
+        }
+        return AppColors.headerBackground;
+      }),
+      trackColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return colorScheme.onPrimaryContainer;
+        }
+        return AppColors.background;
+      }),
+    ),
   );
   static final brightTheme = ThemeData(
     brightness: Brightness.light,

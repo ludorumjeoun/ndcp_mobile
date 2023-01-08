@@ -21,7 +21,8 @@ class IntroPage extends ConsumerWidget {
           if (value == false) {
             return;
           }
-          await Future.delayed(const Duration(seconds: 3));
+          // wait a seconds.
+          await Future.delayed(const Duration(seconds: 1));
           ref.read(counter.notifier).state++;
           final count = ref.read(counter);
           print('focus $value $count');
@@ -32,7 +33,6 @@ class IntroPage extends ConsumerWidget {
           print(
               'restore complete, isSignedIn: ${ref.read(authProvider).isSignedIn}, count: $count');
           final isSignedIn = ref.read(authProvider).isSignedIn;
-          // wait 3 seconds.
           if (isSignedIn) {
             ref.router(this).pushReplacementPath(AppRoutePath.main);
           } else {

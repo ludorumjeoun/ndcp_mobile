@@ -36,9 +36,7 @@ class LoginPage extends ConsumerWidget {
     if (ref.read(authProvider).user == null) {
       // Choose client type
       return EmployeeLoginAuthorizationSubPage((authorization) async {
-        await ref
-            .read(authProvider.notifier)
-            .authorized(authorization);
+        await ref.read(authProvider.notifier).authorized(authorization);
         ref.router(this).pushReplacementPath(AppRoutePath.main);
       });
     }
@@ -151,8 +149,21 @@ class EmployeeLoginAuthorizationSubPageState
                     userId.isNotEmpty &&
                     userPassword.isNotEmpty,
                 label: '로그인')
-            .addField(
-                SwitchFormData(label: '자동로그인', id: 'remeber_authorization')));
+            .addField(SubFormData((context, children) {
+              final _children = children
+                  .map((e) => Flexible(
+                      flex: 1, fit: FlexFit.tight, child: Center(child: e)))
+                  .toList();
+              return Flex(direction: Axis.horizontal, children: _children);
+            },
+                ((fields) => fields
+                    .addField(SwitchFormData(
+                        label: '자동 로그인', id: 'remeber_authorization'))
+                    .addWidget(
+                        TextButton(
+                            onPressed: () {}, child: const Text('아이디/비밀번호찾기')),
+                        label: '아이디/비밀번호찾기')),
+                label: '로그인 정보 저장')));
   }
 
   @override

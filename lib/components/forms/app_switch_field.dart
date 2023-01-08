@@ -18,7 +18,10 @@ class _AppSwitchFieldState extends State<AppSwitchField> {
   bool _value = false;
 
   _buildSwitch() {
-    return Row(
+    return Wrap(
+      direction: Axis.horizontal,
+      alignment: WrapAlignment.start,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Switch(
           value: _value,
@@ -31,19 +34,13 @@ class _AppSwitchFieldState extends State<AppSwitchField> {
             }
           },
         ),
-        Expanded(child: Text(widget.label)),
+        Text(widget.label),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(48),
-      ),
-      child: _buildSwitch(),
-    );
+    return _buildSwitch();
   }
 }

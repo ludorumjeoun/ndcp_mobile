@@ -66,8 +66,11 @@ class WidgetFormData extends FormData<void> {
 
 class SubFormData extends FormData<void> {
   static const String subId = 'sub';
-  final FormDataSet parent;
-  SubFormData(this.parent, {required label}) : super(label: label, id: subId);
+  final void Function(FormDataSet fields) addFields;
+  final Widget Function(BuildContext context, List<Widget> children) build;
+  final FormDataSet _subfields = FormDataSet((fields) async {});
+  SubFormData(this.build, this.addFields, {required label})
+      : super(label: label, id: subId);
 }
 
 abstract class FormField<T, F extends FormData<T>> extends ConsumerWidget {
@@ -78,6 +81,16 @@ abstract class FormField<T, F extends FormData<T>> extends ConsumerWidget {
 
   bool get isFirst => form.isFirstInputField(data);
   bool get isLast => form.isLastInputField(data);
+}
+
+class SubFormField extends FormField<void, SubFormData> {
+  const SubFormField(super.form, super.data, {super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    data.addFields(data._subfields);
+    return data.build(context, data._subfields.toWidgets(form));
+  }
 }
 
 class FormDataSet {
@@ -94,35 +107,33 @@ class FormDataSet {
   }
 
   FormDataSet addText(
-      {required String label,
-      required String id,
-      FormDataDecoration? decoration,
-      void Function(String? value)? onChanged}) {
-    _fields.add(TextFormData(
-        label: label, id: id, decoration: decoration, onChanged: onChanged));
-    return this;
-  }
+          {required String label,
+          required String id,
+          FormDataDecoration? decoration,
+          void Function(String? value)? onChanged}) =>
+      addField(TextFormData(
+          label: label, id: id, decoration: decoration, onChanged: onChanged));
 
   FormDataSet addPassword(
-      {required String label,
-      required String id,
-      FormDataDecoration? decoration,
-      void Function(String? value)? onChanged}) {
-    _fields.add(PasswordFormData(
-        label: label, id: id, decoration: decoration, onChanged: onChanged));
-    return this;
-  }
+          {required String label,
+          required String id,
+          FormDataDecoration? decoration,
+          void Function(String? value)? onChanged}) =>
+      addField(PasswordFormData(
+          label: label, id: id, decoration: decoration, onChanged: onChanged));
 
-  FormDataSet addSubmit({required String label, bool enabled = true}) {
-    _fields.add(SubmitFormData(label: label, enabled: enabled));
-    return this;
-  }
+  FormDataSet addSubmit({required String label, bool enabled = true}) =>
+      addField(SubmitFormData(label: label, enabled: enabled));
 
   _onSubmit() async {
     final Map<String, dynamic> fields = {};
     for (var field in _fields) {
       if (field.id != SubmitFormData.submitId) {
         fields[field.id] = field.value;
+      } else if (field is SubFormData) {
+        for (var subField in field._subfields._fields) {
+          fields[subField.id] = subField.value;
+        }
       }
     }
     try {
@@ -137,6 +148,26 @@ class FormDataSet {
   FormDataSet addWidget(Widget widget, {required String label}) {
     _fields.add(WidgetFormData(widget, label: label));
     return this;
+  }
+
+  toWidgets(AppFormState form) {
+    final List<Widget> widgets = [];
+    for (var field in _fields) {
+      if (field is TextFormData) {
+        widgets.add(TextFormField(form, field));
+      } else if (field is PasswordFormData) {
+        widgets.add(PasswordFormField(form, field));
+      } else if (field is SubmitFormData) {
+        widgets.add(SubmitFormField(form, field));
+      } else if (field is WidgetFormData) {
+        widgets.add(field.widget);
+      } else if (field is SwitchFormData) {
+        widgets.add(SwitchFormField(form, field));
+      } else if (field is SubFormData) {
+        widgets.add(SubFormField(form, field));
+      }
+    }
+    return widgets;
   }
 }
 
@@ -253,20 +284,7 @@ class AppFormState extends ConsumerState<AppForm> {
       data;
 
   List<Widget> _children() {
-    return widget.dataset._fields.map((data) {
-      if (data is TextFormData) {
-        return TextFormField(this, data);
-      } else if (data is PasswordFormData) {
-        return PasswordFormField(this, data);
-      } else if (data is SubmitFormData) {
-        return SubmitFormField(this, data);
-      } else if (data is WidgetFormData) {
-        return data.widget;
-      } else if (data is SwitchFormData) {
-        return SwitchFormField(this, data);
-      }
-      throw Exception('Unknown form field type');
-    }).toList();
+    return widget.dataset.toWidgets(this);
   }
 
   @override
