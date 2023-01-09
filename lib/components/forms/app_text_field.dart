@@ -32,6 +32,7 @@ class AppTextField extends StatelessWidget {
       ),
       filled: true,
       fillColor: Theme.of(context).primaryColor,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       prefixIcon: prefix != null
           ? Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -50,6 +51,7 @@ class AppTextField extends StatelessWidget {
             )
           : null,
       hintText: label,
+      hintStyle: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.5)),
     );
   }
 
@@ -58,6 +60,7 @@ class AppTextField extends StatelessWidget {
     return TextField(
       autofocus: autofocus,
       obscureText: obscureText,
+      textAlignVertical: TextAlignVertical.center,
       textInputAction: textInputAction,
       decoration: _decoration(context),
       onChanged: onChanged,

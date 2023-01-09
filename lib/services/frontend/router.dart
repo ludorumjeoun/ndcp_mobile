@@ -48,6 +48,10 @@ class AppRouterState {
     return _navigator.pushReplacementNamed(_nameWithPath(path));
   }
 
+  bool canPop() {
+    return _navigator.canPop();
+  }
+
   pop([dynamic result]) {
     _navigator.pop(result);
   }

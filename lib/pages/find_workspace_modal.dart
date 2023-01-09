@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndcp_mobile/components/containers.dart';
+import 'package:ndcp_mobile/components/forms/app_text_field.dart';
 import 'package:ndcp_mobile/components/header.dart';
 import 'package:ndcp_mobile/components/theme.dart';
 import 'package:ndcp_mobile/services/auth/auth.dart';
@@ -59,6 +60,17 @@ class FindWorkspaceModalState extends ConsumerState<FindWorkspaceModal> {
     final boxWidth = min(
         MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
     return Scaffold(
+      appBar: Header('병원 선택',
+          options: HeaderOptios(
+            canBack: true,
+            title: Container(
+                height: 40,
+                alignment: Alignment.centerLeft,
+                child: AppTextField(
+                  label: '대상 병원을 검색해주세요',
+                  onChanged: (value) => workspaceId = value ?? '',
+                )),
+          )),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Center(

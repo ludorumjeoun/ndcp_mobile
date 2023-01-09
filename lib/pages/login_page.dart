@@ -120,7 +120,6 @@ class EmployeeLoginAuthorizationSubPageState
       await api
           .authorize(LoginRequest(workspaceId, userId, userPassword))
           .then((value) {
-        debugPrint("authorized $value");
         widget.onAuthorized(value);
       }).catchError((error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -129,40 +128,52 @@ class EmployeeLoginAuthorizationSubPageState
       });
     }))
             .addWidget(_findWorkspaceButton(workspace), label: '대상 병원을 검색해주세요')
-            .addText(
-                label: '아이디를 입력하세요',
-                id: 'user_id',
-                decoration: FormDataDecoration(
-                    prefix:
-                        const Icon(Icons.perm_identity, color: Colors.white)),
-                onChanged: (value) => setState(() => {userId = value ?? ''}))
-            .addPassword(
-                label: '패스워드를 입력하세요',
-                id: 'user_password',
-                decoration: FormDataDecoration(
-                  prefix: const Icon(Icons.password, color: Colors.white),
-                ),
-                onChanged: (value) =>
-                    setState(() => {userPassword = value ?? ''}))
+            .addField(SubFormData(((context, children) {
+              return NormalContainer(
+                  backgroundColor: AppTheme.tableSwatch[1].background,
+                  child: Wrap(spacing: 20, runSpacing: 20, children: children));
+            }),
+                ((fields) => fields
+                    .addText(
+                        label: '아이디를 입력하세요',
+                        id: 'user_id',
+                        decoration: FormDataDecoration(
+                            prefix: const Icon(Icons.perm_identity,
+                                color: Colors.white)),
+                        onChanged: (value) =>
+                            setState(() => {userId = value ?? ''}))
+                    .addPassword(
+                        label: '패스워드를 입력하세요',
+                        id: 'user_password',
+                        decoration: FormDataDecoration(
+                          prefix:
+                              const Icon(Icons.password, color: Colors.white),
+                        ),
+                        onChanged: (value) =>
+                            setState(() => {userPassword = value ?? ''}))),
+                label: '아이디와 패스워드'))
             .addSubmit(
                 enabled: (workspaceId ?? '').isNotEmpty &&
                     userId.isNotEmpty &&
                     userPassword.isNotEmpty,
                 label: '로그인')
             .addField(SubFormData((context, children) {
-              final _children = children
+              final wrappedChildren = children
                   .map((e) => Flexible(
                       flex: 1, fit: FlexFit.tight, child: Center(child: e)))
                   .toList();
-              return Flex(direction: Axis.horizontal, children: _children);
+              return Flex(
+                  direction: Axis.horizontal, children: wrappedChildren);
             },
-                ((fields) => fields
+                ((fields) => {
+                      fields
                     .addField(SwitchFormData(
                         label: '자동 로그인', id: 'remeber_authorization'))
                     .addWidget(
                         TextButton(
                             onPressed: () {}, child: const Text('아이디/비밀번호찾기')),
-                        label: '아이디/비밀번호찾기')),
+                              label: '아이디/비밀번호찾기')
+                    }),
                 label: '로그인 정보 저장')));
   }
 

@@ -70,7 +70,9 @@ class SubFormData extends FormData<void> {
   final Widget Function(BuildContext context, List<Widget> children) build;
   final FormDataSet _subfields = FormDataSet((fields) async {});
   SubFormData(this.build, this.addFields, {required label})
-      : super(label: label, id: subId);
+      : super(label: label, id: subId) {
+    addFields(_subfields);
+  }
 }
 
 abstract class FormField<T, F extends FormData<T>> extends ConsumerWidget {
@@ -86,9 +88,9 @@ abstract class FormField<T, F extends FormData<T>> extends ConsumerWidget {
 class SubFormField extends FormField<void, SubFormData> {
   const SubFormField(super.form, super.data, {super.key});
 
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    data.addFields(data._subfields);
     return data.build(context, data._subfields.toWidgets(form));
   }
 }
